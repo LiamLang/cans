@@ -14,6 +14,8 @@ February 2016
 #define maxCans 8000 // Maximum number of cans allowed
 #define maxLayerSize 20 // Maximum cans along edge of hexagonal layer, should be set to at least cube root of maxCans
 
+void printRepeatedly(char *msg, int times);
+
 void main() {
 
 	// Declare variables
@@ -27,7 +29,7 @@ void main() {
 	int baseSize = 0;
 	int spaces = 0;
 
-	// Read in number of cans between 1 and 1000
+	// Read in number of cans between 1 and maxCans
 	while (cans < 1 || cans > maxCans) {
 		printf("Please enter number of cans: ");
 		scanf("%d", &cans);
@@ -41,7 +43,7 @@ void main() {
 	printf("\nIdeal tower of %d cans:", cans);
 	printf("\n--------------------------------------------------\n");
 
-	// Establish number of cans needed each layer
+	// Establish number of cans needed for each layer
 	// Note a hexagonal pyramid of n layers contains n^3 cans
 	for (i = 0; i < maxLayerSize; i++) {
 		layerSize[i] = pow(i + 1, 3) - pow(i, 3);
@@ -55,6 +57,7 @@ void main() {
 
 	// Build tower up layer by layer, starting from bottom
 	// i tracks the side length of the current layer
+	// layer[] tracks the side length of each layer of the tower
 	i = hexTowerHeight;
 	while (1) {
 
@@ -74,11 +77,13 @@ void main() {
 				currentLayer++;
 			}
 
+			// Add top can
 			layer[currentLayer] = i;
 			currentLayer++;
 
 		} else {
 
+			// Add layer
 			layer[currentLayer] = i;
 			currentLayer++;
 
@@ -90,16 +95,19 @@ void main() {
 			}
 		}
 
+		// Move to smaller layer size, break if we have reached the top
 		i--;
 		if (i == 0) {
 			break;
 		}
 	}
 
-	// Get width of base, so we know how many spaces to include before other layers
+	// Get width of base (number of characters), so we know how many spaces to include before other layers in graphic representation
 	if (layer[0] != -1) {
+		// 2 * partially visible cans at side + cans in centre (2 chars each)
 		baseSize = 2 * (layer[0] / 2) + 2 * layer[0];
 	} else {
+		// Always drawn as [[]]
 		baseSize = 4;
 	}
 
@@ -119,34 +127,28 @@ void main() {
 			// All layers except group of 3
 
 			// Get number of spaces to use before showing cans
-			// Based on length of number in annotation as well as number of cans
+			// 8 minus length of int showing side length of layer, so all layers are in line even if annotations take up different amount of space
 			spaces = 8 - floor (log10 (abs (layer[i]))) + 1;
+			// Add half of difference between size of base and size of this layer
 			spaces += (baseSize - (2 * (layer[i] / 2) + 2 * layer[i])) / 2;
 
-			for (j = 0; j < spaces; j++) {
-				printf(" ");
-			}
+			printRepeatedly(" ", spaces);
 
 			// Draw cans
-			for (j = 0; j < layer[i] / 2; j++) {
-				printf("[");
-			}
-			for (j = 0; j < layer[i]; j++) {
-				printf("[]");
-			}
-			for (j = 0; j < layer[i] / 2; j++) {
-				printf("]");
-			}
+			// Partially visible cans in each hex layer take up sin(30) = 1/2 of the width of visible cans, on each side
+			printRepeatedly("[", layer[i] / 2);
+			printRepeatedly("[]", layer[i]);
+			printRepeatedly("]", layer[i] / 2);
 
 		} else {
 			// Group of 3
 
+			// Get number of spaces to use before showing cans
 			spaces = 9 + (baseSize - 4) / 2;
 
-			for (j = 0; j < spaces; j++) {
-				printf(" ");
-			}
+			printRepeatedly(" ", spaces);
 
+			// Draw group of 3
 			printf("[[]]");
 		}
 	}
@@ -154,4 +156,13 @@ void main() {
 	// Line break and pause for user to see results
 	printf("\n\n");
 	system("pause");
+}
+
+// Print a string repeatedly
+void printRepeatedly(char *msg, int times) {
+
+	int i;
+	for(i = 0; i < times; i++) {
+		printf(msg);
+	}
 }
